@@ -28,7 +28,7 @@ packages:
       name: borsh_annotation
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.0+1"
+    version: "0.3.1"
   characters:
     dependency: transitive
     description:
@@ -229,12 +229,10 @@ packages:
   solana:
     dependency: "direct main"
     description:
-      path: "packages/solana"
-      ref: HEAD
-      resolved-ref: cc5df9f6e66e9d9972467414086de5cffb615ea8
-      url: "https://github.com/cryptoplease/cryptoplease-dart.git"
-    source: git
-    version: "0.22.0-dev.3"
+      name: solana
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.22.0"
   source_span:
     dependency: transitive
     description:
