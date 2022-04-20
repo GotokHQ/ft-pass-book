@@ -1,24 +1,31 @@
 import 'dart:typed_data';
 
 import 'package:passbook/accounts/constants.dart';
+import 'package:passbook/passbook_program.dart';
 import 'package:passbook/utils/endian.dart';
 import 'package:passbook/utils/struct_reader.dart';
+import 'package:collection/collection.dart';
 import 'package:solana/base58.dart';
+import 'package:solana/dto.dart' as dto;
+import 'package:solana/encoder.dart';
+import 'package:solana/solana.dart';
 
 class PassBook {
-  const PassBook(
-      {required this.key,
-      required this.name,
-      required this.description,
-      required this.uri,
-      required this.authority,
-      required this.mint,
-      required this.mutable,
-      required this.passState,
-      required this.durationType,
-      required this.duration,
-      required this.totalPasses,
-      this.maxSupply});
+  const PassBook({
+    required this.key,
+    required this.name,
+    required this.description,
+    required this.uri,
+    required this.authority,
+    required this.mint,
+    required this.mutable,
+    required this.passState,
+    required this.totalPasses,
+    this.access,
+    this.duration,
+    this.maxSupply,
+    this.blurHash,
+  });
 
   factory PassBook.fromBinary(List<int> sourceBytes) {
     final bytes = Int8List.fromList(sourceBytes);
@@ -30,26 +37,35 @@ class PassBook {
     final uri = reader.nextString();
     final mutable = reader.nextBytes(1).first == 1;
     final passState = PassStateExtension.fromId(reader.nextBytes(1).first);
-    final durationType =
-        DurationTypeExtension.fromId(reader.nextBytes(1).first);
-    final BigInt duration = decodeBigInt(reader.nextBytes(8), Endian.little);
+    final hasAccess = reader.nextBytes(1).first == 1;
+    final BigInt? access =
+        hasAccess ? decodeBigInt(reader.nextBytes(8), Endian.little) : null;
+    final hasDuration = reader.nextBytes(1).first == 1;
+    final BigInt? duration =
+        hasDuration ? decodeBigInt(reader.nextBytes(8), Endian.little) : null;
     final BigInt totalPasses = decodeBigInt(reader.nextBytes(8), Endian.little);
     final hasMaxSupply = reader.nextBytes(1).first == 1;
     final BigInt? maxSupply =
         hasMaxSupply ? decodeBigInt(reader.nextBytes(8), Endian.little) : null;
+
+    final hasBlurHash = reader.nextBytes(1).first == 1;
+    final String? blurHash = hasBlurHash ? reader.nextString() : null;
+
     return PassBook(
-        key: AccountKey.passBook,
-        name: name,
-        description: description,
-        uri: uri,
-        authority: authority,
-        mint: mint,
-        mutable: mutable,
-        passState: passState,
-        durationType: durationType,
-        duration: duration,
-        totalPasses: totalPasses,
-        maxSupply: maxSupply);
+      key: AccountKey.passBook,
+      name: name,
+      description: description,
+      uri: uri,
+      authority: authority,
+      mint: mint,
+      mutable: mutable,
+      passState: passState,
+      access: access,
+      duration: duration,
+      totalPasses: totalPasses,
+      maxSupply: maxSupply,
+      blurHash: blurHash,
+    );
   }
 
   final AccountKey key;
@@ -58,10 +74,107 @@ class PassBook {
   final String uri;
   final String authority;
   final String mint;
+  final String? blurHash;
   final bool mutable;
   final PassState passState;
-  final DurationType durationType;
-  final BigInt duration;
+  final BigInt? access;
+  final BigInt? duration;
   final BigInt totalPasses;
   final BigInt? maxSupply;
+
+  static Future<Ed25519HDPublicKey> pda(Ed25519HDPublicKey mint) {
+    return Ed25519HDPublicKey.findProgramAddress(seeds: [
+      Buffer.fromBase58(PassbookProgram.prefix),
+      Buffer.fromBase58(PassbookProgram.programId),
+      mint.toBuffer(),
+    ], programId: Ed25519HDPublicKey.fromBase58(PassbookProgram.programId));
+  }
+}
+
+extension ProgramAccountExt on dto.ProgramAccount {
+  dto.SplTokenAccountDataInfo? toPassBookAccountDataOrNull() {
+    final data = account.data;
+    if (data is dto.ParsedAccountData) {
+      return data.maybeMap(
+        orElse: () => null,
+        splToken: (data) => data.parsed.maybeMap(
+          orElse: () => null,
+          account: (data) {
+            final info = data.info;
+            final tokenAmount = info.tokenAmount;
+            final amount = int.parse(tokenAmount.amount);
+
+            if (tokenAmount.decimals != 0 || amount != 1) {
+              return null;
+            }
+
+            return info;
+          },
+        ),
+      );
+    } else {
+      return null;
+    }
+  }
+}
+
+extension PassBookExtension on RpcClient {
+  Future<PassBook?> getPassBook({
+    required Ed25519HDPublicKey mint,
+  }) async {
+    final programAddress = await PassBook.pda(mint);
+    final account = await getAccountInfo(
+      programAddress.toBase58(),
+      encoding: dto.Encoding.base64,
+    );
+    if (account == null) {
+      return null;
+    }
+
+    final data = account.data;
+
+    if (data is dto.BinaryAccountData) {
+      return PassBook.fromBinary(data.data);
+    } else {
+      return null;
+    }
+  }
+
+  Future<List<PassBook>> findPassBooks(
+      {String? mint, String? authority}) async {
+    final filters = [
+      dto.ProgramDataFilter.memcmp(
+          offset: 0, bytes: Buffer.fromUint8(AccountKey.pass.id).toList()),
+      if (authority != null)
+        dto.ProgramDataFilter.memcmpBase58(offset: 1, bytes: authority),
+      if (mint != null)
+        dto.ProgramDataFilter.memcmpBase58(offset: 33, bytes: mint),
+    ];
+    final accounts = await getProgramAccounts(
+      PassbookProgram.programId,
+      encoding: dto.Encoding.base64,
+      filters: filters,
+    );
+    return accounts
+        .map((acc) => PassBook.fromBinary(
+            (acc.account.data as dto.BinaryAccountData).data))
+        .toList();
+  }
+
+  Future<List<PassBook>> findPassBooksByOwner(String owner) async {
+    final accounts = await getTokenAccountsByOwner(
+      owner,
+      const dto.TokenAccountsFilter.byProgramId(TokenProgram.programId),
+      commitment: Commitment.confirmed,
+      encoding: dto.Encoding.jsonParsed,
+    );
+    final mints =
+        accounts.map((d) => d.toPassBookAccountDataOrNull()).whereNotNull();
+
+    final unfiltered = await Future.wait(
+      mints.map((info) =>
+          getPassBook(mint: Ed25519HDPublicKey.fromBase58(info.mint))),
+    );
+    return unfiltered.whereNotNull().toList();
+  }
 }

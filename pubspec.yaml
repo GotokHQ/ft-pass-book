@@ -10,7 +10,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  solana: ^0.21.0
+  collection: ^1.15.0
+  solana:     
+    git:
+      url: https://github.com/cryptoplease/cryptoplease-dart.git
+      path: packages/solana
+
 
 dev_dependencies:
   flutter_test:

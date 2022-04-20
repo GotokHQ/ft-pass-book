@@ -7,7 +7,7 @@ packages:
       name: async
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.8.2"
+    version: "2.9.0"
   bip39:
     dependency: transitive
     description:
@@ -51,7 +51,7 @@ packages:
     source: hosted
     version: "1.1.0"
   collection:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: collection
       url: "https://pub.dartlang.org"
@@ -78,6 +78,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.5"
+  decimal:
+    dependency: transitive
+    description:
+      name: decimal
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.0"
   ed25519_hd_key:
     dependency: transitive
     description:
@@ -207,6 +214,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.5.2"
+  rational:
+    dependency: transitive
+    description:
+      name: rational
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.2.0"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -215,10 +229,12 @@ packages:
   solana:
     dependency: "direct main"
     description:
-      name: solana
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.21.0"
+      path: "packages/solana"
+      ref: HEAD
+      resolved-ref: cc5df9f6e66e9d9972467414086de5cffb615ea8
+      url: "https://github.com/cryptoplease/cryptoplease-dart.git"
+    source: git
+    version: "0.22.0-dev.3"
   source_span:
     dependency: transitive
     description:

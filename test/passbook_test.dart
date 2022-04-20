@@ -36,9 +36,9 @@ void main() {
               'uri',
             )
             .having(
-              (m) => m.durationType,
-              'durationType',
-              DurationType.days,
+              (m) => m.access,
+              'access',
+              BigInt.from(30),
             )
             .having(
               (m) => m.duration,
