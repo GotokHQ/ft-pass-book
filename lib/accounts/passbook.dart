@@ -10,6 +10,15 @@ import 'package:solana/dto.dart' as dto;
 import 'package:solana/encoder.dart';
 import 'package:solana/solana.dart';
 
+class PassBookAccount {
+  const PassBookAccount({
+    required this.address,
+    required this.passBook,
+  });
+  final String address;
+  final PassBook passBook;
+}
+
 class PassBook {
   const PassBook({
     required this.key,
@@ -121,7 +130,7 @@ extension ProgramAccountExt on dto.ProgramAccount {
 }
 
 extension PassBookExtension on RpcClient {
-  Future<PassBook?> getPassBook({
+  Future<PassBookAccount?> getPassBookAccount({
     required Ed25519HDPublicKey mint,
   }) async {
     final programAddress = await PassBook.pda(mint);
@@ -136,13 +145,14 @@ extension PassBookExtension on RpcClient {
     final data = account.data;
 
     if (data is dto.BinaryAccountData) {
-      return PassBook.fromBinary(data.data);
+      return PassBookAccount(
+          address: account.owner, passBook: PassBook.fromBinary(data.data));
     } else {
       return null;
     }
   }
 
-  Future<List<PassBook>> findPassBooks(
+  Future<List<PassBookAccount>> findPassBooks(
       {String? mint, String? authority}) async {
     final filters = [
       dto.ProgramDataFilter.memcmp(
@@ -158,12 +168,17 @@ extension PassBookExtension on RpcClient {
       filters: filters,
     );
     return accounts
-        .map((acc) => PassBook.fromBinary(
-            (acc.account.data as dto.BinaryAccountData).data))
+        .map(
+          (acc) => PassBookAccount(
+            address: acc.pubkey,
+            passBook: PassBook.fromBinary(
+                (acc.account.data as dto.BinaryAccountData).data),
+          ),
+        )
         .toList();
   }
 
-  Future<List<PassBook>> findPassBooksByOwner(String owner) async {
+  Future<List<PassBookAccount>> findPassBooksByOwner(String owner) async {
     final accounts = await getTokenAccountsByOwner(
       owner,
       const dto.TokenAccountsFilter.byProgramId(TokenProgram.programId),
@@ -175,7 +190,7 @@ extension PassBookExtension on RpcClient {
 
     final unfiltered = await Future.wait(
       mints.map((info) =>
-          getPassBook(mint: Ed25519HDPublicKey.fromBase58(info.mint))),
+          getPassBookAccount(mint: Ed25519HDPublicKey.fromBase58(info.mint))),
     );
     return unfiltered.whereNotNull().toList();
   }
