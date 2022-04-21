@@ -69,39 +69,3 @@ extension PassStateExtension on PassState {
     }
   }
 }
-
-enum DurationType {
-  minutes,
-  hours,
-  days,
-  unlimited,
-}
-
-extension DurationTypeExtension on DurationType {
-  static DurationType fromId(int id) {
-    switch (id) {
-      case 0:
-        return DurationType.minutes;
-      case 1:
-        return DurationType.hours;
-      case 2:
-        return DurationType.days;
-      case 3:
-        return DurationType.unlimited;
-    }
-    throw StateError('Invalid duration type');
-  }
-
-  int get id {
-    switch (this) {
-      case DurationType.minutes:
-        return 0;
-      case DurationType.hours:
-        return 1;
-      case DurationType.days:
-        return 2;
-      case DurationType.unlimited:
-        return 3;
-    }
-  }
-}
