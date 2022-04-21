@@ -1,1 +1,1 @@
-library passbook;
+export 'accounts/index.dart';

@@ -82,6 +82,8 @@ class PassBook {
   final BigInt totalPasses;
   final BigInt? maxSupply;
 
+  static const int maxDataLength = 4405;
+
   static Future<Ed25519HDPublicKey> pda(Ed25519HDPublicKey mint) {
     return Ed25519HDPublicKey.findProgramAddress(seeds: [
       Buffer.fromBase58(PassbookProgram.prefix),
