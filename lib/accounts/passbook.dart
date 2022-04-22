@@ -95,7 +95,7 @@ class PassBook {
 
   static Future<Ed25519HDPublicKey> pda(Ed25519HDPublicKey mint) {
     return Ed25519HDPublicKey.findProgramAddress(seeds: [
-      Buffer.fromBase58(PassbookProgram.prefix),
+      PassbookProgram.prefix.codeUnits,
       Buffer.fromBase58(PassbookProgram.programId),
       mint.toBuffer(),
     ], programId: Ed25519HDPublicKey.fromBase58(PassbookProgram.programId));
@@ -156,7 +156,7 @@ extension PassBookExtension on RpcClient {
       {String? mint, String? authority}) async {
     final filters = [
       dto.ProgramDataFilter.memcmp(
-          offset: 0, bytes: Buffer.fromUint8(AccountKey.pass.id).toList()),
+          offset: 0, bytes: Buffer.fromUint8(AccountKey.passBook.id).toList()),
       if (authority != null)
         dto.ProgramDataFilter.memcmpBase58(offset: 1, bytes: authority),
       if (mint != null)
@@ -187,10 +187,12 @@ extension PassBookExtension on RpcClient {
     );
     final mints =
         accounts.map((d) => d.toPassBookAccountDataOrNull()).whereNotNull();
-
     final unfiltered = await Future.wait(
-      mints.map((info) =>
-          getPassBookAccount(mint: Ed25519HDPublicKey.fromBase58(info.mint))),
+      mints.map((info) async {
+        final pda = await getPassBookAccount(
+            mint: Ed25519HDPublicKey.fromBase58(info.mint));
+        return pda;
+      }),
     );
     return unfiltered.whereNotNull().toList();
   }

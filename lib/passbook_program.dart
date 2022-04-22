@@ -11,12 +11,4 @@ class PassbookProgram {
       Buffer.fromBase58(PassbookProgram.programId),
     ], programId: Ed25519HDPublicKey.fromBase58(programId));
   }
-
-  static Future<Ed25519HDPublicKey> findPassAccount(String mint) {
-    return Ed25519HDPublicKey.findProgramAddress(seeds: [
-      Buffer.fromBase58(prefix),
-      Buffer.fromBase58(PassbookProgram.programId),
-      Buffer.fromBase58(mint),
-    ], programId: Ed25519HDPublicKey.fromBase58(programId));
-  }
 }
