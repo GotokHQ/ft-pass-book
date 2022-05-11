@@ -30,10 +30,14 @@ class PassBook {
     required this.mutable,
     required this.passState,
     required this.totalPasses,
+    required this.createdAt,
+    required this.price,
+    required this.priceMint,
     this.access,
     this.duration,
     this.maxSupply,
     this.blurHash,
+    this.gateKeeper,
   });
 
   factory PassBook.fromBinary(List<int> sourceBytes) {
@@ -60,21 +64,32 @@ class PassBook {
     final hasBlurHash = reader.nextBytes(1).first == 1;
     final String? blurHash = hasBlurHash ? reader.nextString() : null;
 
+    final BigInt createdAt = decodeBigInt(reader.nextBytes(8), Endian.little);
+    final BigInt price = decodeBigInt(reader.nextBytes(8), Endian.little);
+    final priceMint = base58encode(reader.nextBytes(32));
+    final hasGateKeeper = reader.nextBytes(1).first == 1;
+    final String? gateKeeper =
+        hasGateKeeper ? base58encode(reader.nextBytes(32)) : null;
+
     return PassBook(
-      key: AccountKey.passBook,
-      name: name,
-      description: description,
-      uri: uri,
-      authority: authority,
-      mint: mint,
-      mutable: mutable,
-      passState: passState,
-      access: access,
-      duration: duration,
-      totalPasses: totalPasses,
-      maxSupply: maxSupply,
-      blurHash: blurHash,
-    );
+        key: AccountKey.passBook,
+        name: name,
+        description: description,
+        uri: uri,
+        authority: authority,
+        mint: mint,
+        mutable: mutable,
+        passState: passState,
+        access: access,
+        duration: duration,
+        totalPasses: totalPasses,
+        maxSupply: maxSupply,
+        blurHash: blurHash,
+        createdAt: DateTime.fromMillisecondsSinceEpoch(
+            (createdAt * BigInt.from(1000)).toInt()),
+        price: price,
+        priceMint: priceMint,
+        gateKeeper: gateKeeper);
   }
 
   final AccountKey key;
@@ -90,8 +105,10 @@ class PassBook {
   final BigInt? duration;
   final BigInt totalPasses;
   final BigInt? maxSupply;
-
-  static const int maxDataLength = 4405;
+  final DateTime createdAt;
+  final BigInt price;
+  final String priceMint;
+  final String? gateKeeper;
 
   static Future<Ed25519HDPublicKey> pda(Ed25519HDPublicKey mint) {
     return Ed25519HDPublicKey.findProgramAddress(seeds: [
