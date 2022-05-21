@@ -33,6 +33,7 @@ class PassBook {
     required this.createdAt,
     required this.price,
     required this.priceMint,
+    required this.token,
     this.access,
     this.duration,
     this.maxSupply,
@@ -67,6 +68,7 @@ class PassBook {
     final BigInt createdAt = decodeBigInt(reader.nextBytes(8), Endian.little);
     final BigInt price = decodeBigInt(reader.nextBytes(8), Endian.little);
     final priceMint = base58encode(reader.nextBytes(32));
+    final token = base58encode(reader.nextBytes(32));
     final hasGateKeeper = reader.nextBytes(1).first == 1;
     final String? gateKeeper =
         hasGateKeeper ? base58encode(reader.nextBytes(32)) : null;
@@ -89,6 +91,7 @@ class PassBook {
             (createdAt * BigInt.from(1000)).toInt()),
         price: price,
         priceMint: priceMint,
+        token: token,
         gateKeeper: gateKeeper);
   }
 
@@ -108,6 +111,7 @@ class PassBook {
   final DateTime createdAt;
   final BigInt price;
   final String priceMint;
+  final String token;
   final String? gateKeeper;
 
   static Future<Ed25519HDPublicKey> pda(Ed25519HDPublicKey mint) {
