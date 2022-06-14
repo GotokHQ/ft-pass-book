@@ -4,14 +4,14 @@ version: 0.0.1
 homepage:
 
 environment:
-  sdk: ">=2.17.0-239.0.dev <3.0.0"
+  sdk: ">=2.17.3 <3.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
   flutter:
     sdk: flutter
   collection: ^1.15.0
-  solana: ^0.22.0
+  solana: ^0.25.0
 
 
 dev_dependencies:

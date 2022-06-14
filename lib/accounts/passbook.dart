@@ -115,11 +115,12 @@ class PassBook {
   final String? gateKeeper;
 
   static Future<Ed25519HDPublicKey> pda(Ed25519HDPublicKey mint) {
+    final programID = Ed25519HDPublicKey.fromBase58(PassbookProgram.programId);
     return Ed25519HDPublicKey.findProgramAddress(seeds: [
       PassbookProgram.prefix.codeUnits,
-      Buffer.fromBase58(PassbookProgram.programId),
-      mint.toBuffer(),
-    ], programId: Ed25519HDPublicKey.fromBase58(PassbookProgram.programId));
+      programID.bytes,
+      mint.bytes,
+    ], programId: programID);
   }
 }
 
@@ -177,7 +178,7 @@ extension PassBookExtension on RpcClient {
       {String? mint, String? authority}) async {
     final filters = [
       dto.ProgramDataFilter.memcmp(
-          offset: 0, bytes: Buffer.fromUint8(AccountKey.passBook.id).toList()),
+          offset: 0, bytes: ByteArray.u8(AccountKey.passBook.id).toList()),
       if (authority != null)
         dto.ProgramDataFilter.memcmpBase58(offset: 1, bytes: authority),
       if (mint != null)

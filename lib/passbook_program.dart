@@ -1,4 +1,3 @@
-import 'package:solana/encoder.dart';
 import 'package:solana/solana.dart';
 
 class PassbookProgram {
@@ -7,8 +6,8 @@ class PassbookProgram {
 
   static Future<Ed25519HDPublicKey> findProgramAuthority() {
     return Ed25519HDPublicKey.findProgramAddress(seeds: [
-      Buffer.fromBase58(prefix),
-      Buffer.fromBase58(PassbookProgram.programId),
+      prefix.codeUnits,
+      Ed25519HDPublicKey.fromBase58(PassbookProgram.programId).bytes,
     ], programId: Ed25519HDPublicKey.fromBase58(programId));
   }
 }

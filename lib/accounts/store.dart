@@ -41,11 +41,12 @@ class Store {
   final BigInt passBookCount;
 
   static Future<Ed25519HDPublicKey> pda(String authority) {
+    final programID = Ed25519HDPublicKey.fromBase58(PassbookProgram.programId);
     return Ed25519HDPublicKey.findProgramAddress(seeds: [
-      Buffer.fromBase58(prefix),
-      Buffer.fromBase58(PassbookProgram.programId),
-      Buffer.fromBase58(authority),
-      Buffer.fromBase58(Store.prefix),
-    ], programId: Ed25519HDPublicKey.fromBase58(PassbookProgram.programId));
+      prefix.codeUnits,
+      programID.bytes,
+      Ed25519HDPublicKey.fromBase58(authority).bytes,
+      Store.prefix.codeUnits,
+    ], programId: programID);
   }
 }
