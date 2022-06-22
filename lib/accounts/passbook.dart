@@ -20,26 +20,26 @@ class PassBookAccount {
 }
 
 class PassBook {
-  const PassBook({
-    required this.key,
-    required this.name,
-    required this.description,
-    required this.uri,
-    required this.authority,
-    required this.mint,
-    required this.mutable,
-    required this.passState,
-    required this.totalPasses,
-    required this.createdAt,
-    required this.price,
-    required this.priceMint,
-    required this.token,
-    this.access,
-    this.duration,
-    this.maxSupply,
-    this.blurHash,
-    this.gateKeeper,
-  });
+  const PassBook(
+      {required this.key,
+      required this.name,
+      required this.description,
+      required this.uri,
+      required this.authority,
+      required this.mint,
+      required this.mutable,
+      required this.passState,
+      required this.totalPasses,
+      required this.createdAt,
+      required this.price,
+      required this.priceMint,
+      required this.token,
+      this.access,
+      this.duration,
+      this.maxSupply,
+      this.blurHash,
+      this.gateKeeper,
+      this.creators});
 
   factory PassBook.fromBinary(List<int> sourceBytes) {
     final bytes = Int8List.fromList(sourceBytes);
@@ -72,7 +72,12 @@ class PassBook {
     final hasGateKeeper = reader.nextBytes(1).first == 1;
     final String? gateKeeper =
         hasGateKeeper ? base58encode(reader.nextBytes(32)) : null;
-
+    final hasCreators = reader.nextBytes(1).first == 1;
+    final creatorLength = hasCreators
+        ? decodeBigInt(reader.nextBytes(4), Endian.little)
+        : BigInt.zero;
+    final List<String> creators = List.generate(
+        creatorLength.toInt(), (index) => base58encode(reader.nextBytes(32)));
     return PassBook(
         key: AccountKey.passBook,
         name: name,
@@ -92,7 +97,8 @@ class PassBook {
         price: price,
         priceMint: priceMint,
         token: token,
-        gateKeeper: gateKeeper);
+        gateKeeper: gateKeeper,
+        creators: creators);
   }
 
   final AccountKey key;
@@ -113,6 +119,7 @@ class PassBook {
   final String priceMint;
   final String token;
   final String? gateKeeper;
+  final List<String>? creators;
 
   static Future<Ed25519HDPublicKey> pda(Ed25519HDPublicKey mint) {
     final programID = Ed25519HDPublicKey.fromBase58(PassbookProgram.programId);
