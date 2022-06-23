@@ -175,7 +175,8 @@ extension PassBookExtension on RpcClient {
 
     if (data is dto.BinaryAccountData) {
       return PassBookAccount(
-          address: account.owner, passBook: PassBook.fromBinary(data.data));
+          address: programAddress.toBase58(),
+          passBook: PassBook.fromBinary(data.data));
     } else {
       return null;
     }
