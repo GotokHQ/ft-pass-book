@@ -5,17 +5,17 @@ import 'package:passbook/passbook_program.dart';
 import 'package:passbook/utils/endian.dart';
 import 'package:passbook/utils/struct_reader.dart';
 import 'package:solana/base58.dart';
-import 'package:solana/encoder.dart';
 import 'package:solana/solana.dart';
 
 class Store {
-  const Store({
-    required this.key,
-    required this.authority,
-    required this.redemptionsCount,
-    required this.passCount,
-    required this.passBookCount,
-  });
+  const Store(
+      {required this.key,
+      required this.authority,
+      required this.redemptionsCount,
+      required this.passCount,
+      required this.passBookCount,
+      this.referrer,
+      this.referralEndDate});
 
   static const prefix = 'store';
 
@@ -26,12 +26,25 @@ class Store {
     final redemptionsCount = decodeBigInt(reader.nextBytes(8), Endian.little);
     final passCount = decodeBigInt(reader.nextBytes(8), Endian.little);
     final passBookCount = decodeBigInt(reader.nextBytes(8), Endian.little);
+    final hasReferrer = reader.nextBytes(1).first == 1;
+    final String? referrer =
+        hasReferrer ? base58encode(reader.nextBytes(32)) : null;
+    final hasReferralEndDate = reader.nextBytes(1).first == 1;
+    final DateTime? referralEndDate = hasReferralEndDate
+        ? DateTime.fromMillisecondsSinceEpoch(
+            (decodeBigInt(reader.nextBytes(8), Endian.little) *
+                    BigInt.from(1000))
+                .toInt())
+        : null;
+
     return Store(
         key: AccountKey.passStore,
         authority: authority,
         redemptionsCount: redemptionsCount,
         passCount: passCount,
-        passBookCount: passBookCount);
+        passBookCount: passBookCount,
+        referrer: referrer,
+        referralEndDate: referralEndDate);
   }
 
   final AccountKey key;
@@ -39,6 +52,8 @@ class Store {
   final BigInt redemptionsCount;
   final BigInt passCount;
   final BigInt passBookCount;
+  final String? referrer;
+  final DateTime? referralEndDate;
 
   static Future<Ed25519HDPublicKey> pda(String authority) {
     final programID = Ed25519HDPublicKey.fromBase58(PassbookProgram.programId);

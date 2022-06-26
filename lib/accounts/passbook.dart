@@ -38,7 +38,7 @@ class PassBook {
       this.duration,
       this.maxSupply,
       this.blurHash,
-      this.gateKeeper,
+      this.marketAuthority,
       this.creators});
 
   factory PassBook.fromBinary(List<int> sourceBytes) {
@@ -69,9 +69,9 @@ class PassBook {
     final BigInt price = decodeBigInt(reader.nextBytes(8), Endian.little);
     final priceMint = base58encode(reader.nextBytes(32));
     final token = base58encode(reader.nextBytes(32));
-    final hasGateKeeper = reader.nextBytes(1).first == 1;
-    final String? gateKeeper =
-        hasGateKeeper ? base58encode(reader.nextBytes(32)) : null;
+    final hasMarketAuthority = reader.nextBytes(1).first == 1;
+    final String? marketAuthority =
+        hasMarketAuthority ? base58encode(reader.nextBytes(32)) : null;
     final hasCreators = reader.nextBytes(1).first == 1;
     final creatorLength = hasCreators
         ? decodeBigInt(reader.nextBytes(4), Endian.little)
@@ -97,7 +97,7 @@ class PassBook {
         price: price,
         priceMint: priceMint,
         token: token,
-        gateKeeper: gateKeeper,
+        marketAuthority: marketAuthority,
         creators: creators);
   }
 
@@ -118,7 +118,7 @@ class PassBook {
   final BigInt price;
   final String priceMint;
   final String token;
-  final String? gateKeeper;
+  final String? marketAuthority;
   final List<String>? creators;
 
   static Future<Ed25519HDPublicKey> pda(Ed25519HDPublicKey mint) {
