@@ -159,12 +159,18 @@ extension ProgramAccountExt on dto.ProgramAccount {
 }
 
 extension PassBookExtension on RpcClient {
-  Future<PassBookAccount?> getPassBookAccount({
+  Future<PassBookAccount?> getPassBookAccountByMint({
     required Ed25519HDPublicKey mint,
   }) async {
     final programAddress = await PassBook.pda(mint);
+    return getPassBookAccount(address: programAddress);
+  }
+
+  Future<PassBookAccount?> getPassBookAccount({
+    required Ed25519HDPublicKey address,
+  }) async {
     final account = await getAccountInfo(
-      programAddress.toBase58(),
+      address.toBase58(),
       encoding: dto.Encoding.base64,
     );
     if (account == null) {
@@ -175,7 +181,7 @@ extension PassBookExtension on RpcClient {
 
     if (data is dto.BinaryAccountData) {
       return PassBookAccount(
-          address: programAddress.toBase58(),
+          address: address.toBase58(),
           passBook: PassBook.fromBinary(data.data));
     } else {
       return null;
@@ -219,7 +225,7 @@ extension PassBookExtension on RpcClient {
         accounts.map((d) => d.toPassBookAccountDataOrNull()).whereNotNull();
     final unfiltered = await Future.wait(
       mints.map((info) async {
-        final pda = await getPassBookAccount(
+        final pda = await getPassBookAccountByMint(
             mint: Ed25519HDPublicKey.fromBase58(info.mint));
         return pda;
       }),
