@@ -31,7 +31,6 @@ class PassBook {
     required this.totalPasses,
     required this.createdAt,
     required this.price,
-    required this.token,
     this.access,
     this.maxUses,
     this.maxSupply,
@@ -61,7 +60,6 @@ class PassBook {
     final BigInt createdAt = decodeBigInt(reader.nextBytes(8), Endian.little);
     final BigInt price = decodeBigInt(reader.nextBytes(8), Endian.little);
     final mint = base58encode(reader.nextBytes(32));
-    final token = base58encode(reader.nextBytes(32));
     final hasMarketAuthority = reader.nextBytes(1).first == 1;
     final String? marketAuthority =
         hasMarketAuthority ? base58encode(reader.nextBytes(32)) : null;
@@ -81,7 +79,6 @@ class PassBook {
       createdAt: DateTime.fromMillisecondsSinceEpoch(
           (createdAt * BigInt.from(1000)).toInt()),
       price: price,
-      token: token,
       marketAuthority: marketAuthority,
     );
   }
@@ -100,7 +97,6 @@ class PassBook {
   final BigInt? maxSupply;
   final DateTime createdAt;
   final BigInt price;
-  final String token;
   final String? marketAuthority;
 
   static Future<Ed25519HDPublicKey> pda(Ed25519HDPublicKey mint) {
