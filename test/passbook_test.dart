@@ -16,8 +16,8 @@ void main() {
             .having((m) => m.name, 'name', 'my pass book')
             .having((m) => m.description, 'description', 'test')
             .having(
-              (m) => m.passState,
-              'passState',
+              (m) => m.state,
+              'state',
               PassState.notActivated,
             )
             .having(
