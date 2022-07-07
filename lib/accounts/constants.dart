@@ -6,6 +6,8 @@ enum AccountKey {
   payout,
   tradeHistory,
   membership,
+  useAuthority,
+  storeAuthority,
 }
 
 extension AccountKeyExtension on AccountKey {
@@ -25,6 +27,10 @@ extension AccountKeyExtension on AccountKey {
         return AccountKey.tradeHistory;
       case 6:
         return AccountKey.membership;
+      case 7:
+        return AccountKey.useAuthority;
+      case 8:
+        return AccountKey.storeAuthority;
     }
     throw StateError('Invalid account key');
   }
@@ -45,6 +51,10 @@ extension AccountKeyExtension on AccountKey {
         return 5;
       case AccountKey.membership:
         return 6;
+      case AccountKey.useAuthority:
+        return 7;
+      case AccountKey.storeAuthority:
+        return 8;
     }
   }
 }

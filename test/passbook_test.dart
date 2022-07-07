@@ -41,8 +41,8 @@ void main() {
               BigInt.from(30),
             )
             .having(
-              (m) => m.duration,
-              'duration',
+              (m) => m.maxUses,
+              'maxUses',
               BigInt.from(30),
             )
             .having(

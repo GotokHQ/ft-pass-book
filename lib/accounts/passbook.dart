@@ -33,7 +33,7 @@ class PassBook {
     required this.price,
     required this.token,
     this.access,
-    this.duration,
+    this.maxUses,
     this.maxSupply,
     this.blurHash,
     this.marketAuthority,
@@ -51,9 +51,9 @@ class PassBook {
     final hasAccess = reader.nextBytes(1).first == 1;
     final BigInt? access =
         hasAccess ? decodeBigInt(reader.nextBytes(8), Endian.little) : null;
-    final hasDuration = reader.nextBytes(1).first == 1;
-    final BigInt? duration =
-        hasDuration ? decodeBigInt(reader.nextBytes(8), Endian.little) : null;
+    final hasMaxUses = reader.nextBytes(1).first == 1;
+    final BigInt? maxUses =
+        hasMaxUses ? decodeBigInt(reader.nextBytes(8), Endian.little) : null;
     final BigInt totalPasses = decodeBigInt(reader.nextBytes(8), Endian.little);
     final hasMaxSupply = reader.nextBytes(1).first == 1;
     final BigInt? maxSupply =
@@ -79,7 +79,7 @@ class PassBook {
       mutable: mutable,
       state: state,
       access: access,
-      duration: duration,
+      maxUses: maxUses,
       totalPasses: totalPasses,
       maxSupply: maxSupply,
       blurHash: blurHash,
@@ -101,7 +101,7 @@ class PassBook {
   final String? blurHash;
   final bool mutable;
   final BigInt? access;
-  final BigInt? duration;
+  final BigInt? maxUses;
   final BigInt totalPasses;
   final BigInt? maxSupply;
   final DateTime createdAt;

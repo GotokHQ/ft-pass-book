@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:passbook/accounts/constants.dart';
+import 'package:passbook/accounts/uses.dart';
 import 'package:passbook/passbook_program.dart';
 import 'package:passbook/utils/endian.dart';
 import 'package:passbook/utils/struct_reader.dart';
@@ -28,6 +29,7 @@ class Membership {
     this.pass,
     this.expiresAt,
     this.activatedAt,
+    this.uses,
   });
 
   factory Membership.fromBinary(List<int> sourceBytes) {
@@ -53,6 +55,10 @@ class Membership {
         ? decodeBigInt(reader.nextBytes(8), Endian.little)
         : null;
 
+    final hasUses = reader.nextBytes(1).first == 1;
+    final Uses? uses =
+        hasUses ? Uses.fromBinary(reader.nextBytes(kMaxUsesLength)) : null;
+
     return Membership(
       key: AccountKey.membership,
       store: store,
@@ -68,6 +74,7 @@ class Membership {
           ? DateTime.fromMillisecondsSinceEpoch(
               (activatedAt * BigInt.from(1000)).toInt())
           : null,
+      uses: uses,
     );
   }
 
@@ -79,6 +86,7 @@ class Membership {
   final String? pass;
   final DateTime? expiresAt;
   final DateTime? activatedAt;
+  final Uses? uses;
 
   static const prefix = 'membership';
 
