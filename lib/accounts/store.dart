@@ -12,6 +12,8 @@ class Store {
       {required this.key,
       required this.authority,
       required this.redemptionsCount,
+      required this.membershipCount,
+      required this.activeMembershipCount,
       required this.passCount,
       required this.passBookCount,
       this.referrer,
@@ -24,6 +26,9 @@ class Store {
     final reader = StructReader(bytes.buffer)..skip(1);
     final authority = base58encode(reader.nextBytes(32));
     final redemptionsCount = decodeBigInt(reader.nextBytes(8), Endian.little);
+    final membershipCount = decodeBigInt(reader.nextBytes(8), Endian.little);
+    final activeMembershipCount =
+        decodeBigInt(reader.nextBytes(8), Endian.little);
     final passCount = decodeBigInt(reader.nextBytes(8), Endian.little);
     final passBookCount = decodeBigInt(reader.nextBytes(8), Endian.little);
     final hasReferrer = reader.nextBytes(1).first == 1;
@@ -41,6 +46,8 @@ class Store {
         key: AccountKey.passStore,
         authority: authority,
         redemptionsCount: redemptionsCount,
+        membershipCount: membershipCount,
+        activeMembershipCount: activeMembershipCount,
         passCount: passCount,
         passBookCount: passBookCount,
         referrer: referrer,
@@ -50,6 +57,8 @@ class Store {
   final AccountKey key;
   final String authority;
   final BigInt redemptionsCount;
+  final BigInt membershipCount;
+  final BigInt activeMembershipCount;
   final BigInt passCount;
   final BigInt passBookCount;
   final String? referrer;

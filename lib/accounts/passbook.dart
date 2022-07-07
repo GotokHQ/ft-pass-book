@@ -35,7 +35,6 @@ class PassBook {
     this.access,
     this.maxUses,
     this.maxSupply,
-    this.blurHash,
     this.marketAuthority,
   });
 
@@ -59,9 +58,6 @@ class PassBook {
     final BigInt? maxSupply =
         hasMaxSupply ? decodeBigInt(reader.nextBytes(8), Endian.little) : null;
 
-    final hasBlurHash = reader.nextBytes(1).first == 1;
-    final String? blurHash = hasBlurHash ? reader.nextString() : null;
-
     final BigInt createdAt = decodeBigInt(reader.nextBytes(8), Endian.little);
     final BigInt price = decodeBigInt(reader.nextBytes(8), Endian.little);
     final mint = base58encode(reader.nextBytes(32));
@@ -82,7 +78,6 @@ class PassBook {
       maxUses: maxUses,
       totalPasses: totalPasses,
       maxSupply: maxSupply,
-      blurHash: blurHash,
       createdAt: DateTime.fromMillisecondsSinceEpoch(
           (createdAt * BigInt.from(1000)).toInt()),
       price: price,
@@ -98,7 +93,6 @@ class PassBook {
   final String description;
   final String uri;
   final String mint;
-  final String? blurHash;
   final bool mutable;
   final BigInt? access;
   final BigInt? maxUses;
