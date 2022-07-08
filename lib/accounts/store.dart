@@ -7,6 +7,15 @@ import 'package:passbook/utils/struct_reader.dart';
 import 'package:solana/base58.dart';
 import 'package:solana/solana.dart';
 
+class StoreAccount {
+  const StoreAccount({
+    required this.address,
+    required this.store,
+  });
+  final String address;
+  final Store store;
+}
+
 class Store {
   const Store(
       {required this.key,
