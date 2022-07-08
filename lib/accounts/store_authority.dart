@@ -64,35 +64,8 @@ class StoreAuthority {
   }
 }
 
-extension ProgramAccountExt on dto.ProgramAccount {
-  dto.SplTokenAccountDataInfo? toPassBookAccountDataOrNull() {
-    final data = account.data;
-    if (data is dto.ParsedAccountData) {
-      return data.maybeMap(
-        orElse: () => null,
-        splToken: (data) => data.parsed.maybeMap(
-          orElse: () => null,
-          account: (data) {
-            final info = data.info;
-            final tokenAmount = info.tokenAmount;
-            final amount = int.parse(tokenAmount.amount);
-
-            if (tokenAmount.decimals != 0 || amount != 1) {
-              return null;
-            }
-
-            return info;
-          },
-        ),
-      );
-    } else {
-      return null;
-    }
-  }
-}
-
-extension UseAuthorityExtension on RpcClient {
-  Future<StoreAuthorityAccount?> getUseAuthorityAccount({
+extension StoreAuthorityExtension on RpcClient {
+  Future<StoreAuthorityAccount?> getStoreAuthorityAccount({
     required Ed25519HDPublicKey address,
   }) async {
     final account = await getAccountInfo(
@@ -114,7 +87,7 @@ extension UseAuthorityExtension on RpcClient {
     }
   }
 
-  Future<List<StoreAuthorityAccount>> findUseAuthorities(
+  Future<List<StoreAuthorityAccount>> findStoreAuthorities(
       {String? store}) async {
     final filters = [
       dto.ProgramDataFilter.memcmp(
