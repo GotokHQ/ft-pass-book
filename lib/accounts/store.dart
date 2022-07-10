@@ -6,6 +6,8 @@ import 'package:passbook/utils/endian.dart';
 import 'package:passbook/utils/struct_reader.dart';
 import 'package:solana/base58.dart';
 import 'package:solana/solana.dart';
+import 'package:solana/dto.dart' as dto;
+import 'package:solana/encoder.dart';
 
 class StoreAccount {
   const StoreAccount({
@@ -81,5 +83,30 @@ class Store {
       Ed25519HDPublicKey.fromBase58(authority).bytes,
       Store.prefix.codeUnits,
     ], programId: programID);
+  }
+}
+
+extension StoreExtension on RpcClient {
+  Future<StoreAccount?> getStoreAccount({
+    required Ed25519HDPublicKey address,
+  }) async {
+    final account = await getAccountInfo(
+      address.toBase58(),
+      encoding: dto.Encoding.base64,
+    );
+    if (account == null) {
+      return null;
+    }
+
+    final data = account.data;
+
+    if (data is dto.BinaryAccountData) {
+      return StoreAccount(
+        address: address.toBase58(),
+        store: Store.fromBinary(data.data),
+      );
+    } else {
+      return null;
+    }
   }
 }
