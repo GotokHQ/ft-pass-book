@@ -78,7 +78,7 @@ class Store {
   static Future<Ed25519HDPublicKey> pda(String authority) {
     final programID = Ed25519HDPublicKey.fromBase58(PassbookProgram.programId);
     return Ed25519HDPublicKey.findProgramAddress(seeds: [
-      prefix.codeUnits,
+      PassbookProgram.prefix.codeUnits,
       programID.bytes,
       Ed25519HDPublicKey.fromBase58(authority).bytes,
       Store.prefix.codeUnits,
